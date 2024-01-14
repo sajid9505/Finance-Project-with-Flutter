@@ -134,6 +134,7 @@
 import 'package:flutter/material.dart';
 import 'controller/form_controller.dart';
 import 'model/form.dart';
+import 'package:finance_tracker_mobile_application/pages/feedback_list.dart';
 
 void main() => runApp(const MyApp());
 
@@ -291,10 +292,25 @@ class _MyHomePageState extends State<MyHomePage> {
                 )),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: Colors.blue, // text color
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue, // text color
               ),
               onPressed: _submitForm,
               child: const Text('Submit Feedback'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue, // text color
+              ),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FeedbackListScreen(),
+                    ));
+              },
+              child: const Text('View Feedback'),
             ),
           ],
         ),
