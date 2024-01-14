@@ -1,4 +1,5 @@
 import 'package:finance_tracker_mobile_application/components/budget_card.dart';
+import 'package:finance_tracker_mobile_application/components/budget_week.dart';
 import 'package:finance_tracker_mobile_application/components/home_card.dart';
 import 'package:flutter/material.dart';
 
@@ -8,18 +9,17 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF10161e), // Set your custom background color
+      backgroundColor:
+          const Color(0xFF10161e), // Set your custom background color
       appBar: AppBar(
-         backgroundColor: const Color(0xFF10161e), // Set your desired background color for the AppBar
+        backgroundColor: const Color(
+            0xFF10161e), // Set your desired background color for the AppBar
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Hello Sajid',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.white
-                ),
+              style: TextStyle(fontSize: 20, color: Colors.white),
             ),
             Text(
               'Your finances are looking not so good...',
@@ -48,7 +48,8 @@ class HomePage extends StatelessWidget {
       body: ListView(
         children: const [
           HomeCard(),
-          BudgetCard()
+          BudgetCard(),
+          BudgetWeek()
           // Add more widgets as needed
         ],
       ),
