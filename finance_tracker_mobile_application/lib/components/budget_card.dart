@@ -16,11 +16,6 @@ class BudgetCard extends StatelessWidget {
             const SizedBox(
               width: double.infinity,
               height: double.infinity,
-              // child: SvgPicture.asset(
-              //   'assets/BackgroundCard.svg',
-              //   fit: BoxFit.cover,
-              //   color: Colors.black,
-              // ),
             ),
             Container(
               margin: const EdgeInsets.all(16.0), // Set the desired margin
