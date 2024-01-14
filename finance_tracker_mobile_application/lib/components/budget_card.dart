@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:finance_tracker_mobile_application/controller/form_controller.dart';
+import 'package:finance_tracker_mobile_application/model/form.dart';
 
-class BudgetCard extends StatelessWidget {
-  const BudgetCard({super.key});
+class BudgetCardPage extends StatefulWidget {
+  const BudgetCardPage({Key? key, required this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _BudgetCardPageState createState() => _BudgetCardPageState();
+}
+
+class _BudgetCardPageState extends State<BudgetCardPage> {
+  FeedbackForm? feedback;
+
+  @override
+  void initState() {
+    super.initState();
+
+    FormController().getFeedback().then((feedback) {
+      setState(() {
+        this.feedback = feedback;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,49 +42,50 @@ class BudgetCard extends StatelessWidget {
             ),
             Container(
               margin: const EdgeInsets.all(16.0), // Set the desired margin
-              child: const Positioned(
+              child: Positioned(
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 2), // Add margin at the top
-                      Text(
+                      const SizedBox(height: 2), // Add margin at the top
+                      const Text(
                         'Food Budget',
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.white70,
                         ),
                       ),
-                      SizedBox(height: 12), // Add margin at the top
+                      const SizedBox(height: 12), // Add margin at the top
                       Text(
-                        '2,900 TK',
-                        style: TextStyle(
+                        '${feedback?.foodSpent ?? 0} TK',
+                        style: const TextStyle(
                           fontSize: 25,
                           fontWeight: FontWeight.w800,
                           color: Colors.white70,
                         ),
                       ),
                       Text(
-                        'Left out of 10,000 TK budgeted',
-                        style: TextStyle(
+                        'Left out of ${feedback?.foodBudget ?? 0} TK budgeted',
+                        style: const TextStyle(
                           fontSize: 15,
                           color: Colors.white70,
                         ),
                         textAlign: TextAlign.left,
                       ),
-                      SizedBox(height: 20), // Add margin at the top
+                      const SizedBox(height: 20), // Add margin at the top
                       LinearProgressIndicator(
-                        value:
-                            0.5, // Set the progress value between 0.0 and 1.0
+                        value: feedback != null
+                            ? feedback!.foodSpent / feedback!.foodBudget
+                            : 0.0, // Set the progress value between 0.0 and 1.0
                         backgroundColor:
                             Colors.grey, // Set the background color
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Color.fromARGB(255, 74, 241,
-                                130)), // Set the progress bar color
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color.fromARGB(255, 74, 241, 130),
+                        ), // Set the progress bar color
                       ),
-                      SizedBox(height: 30), // Add margin at the top
-                      Text(
+                      const SizedBox(height: 30), // Add margin at the top
+                      const Text(
                         'Calm down, you are spending too much!',
                         style: TextStyle(
                           fontSize: 15,

@@ -1,5 +1,5 @@
 import 'package:finance_tracker_mobile_application/components/budget_card.dart';
-import 'package:finance_tracker_mobile_application/components/budget_week.dart';
+// import 'package:finance_tracker_mobile_application/components/budget_week.dart';
 import 'package:finance_tracker_mobile_application/components/home_card.dart';
 import 'package:flutter/material.dart';
 
@@ -47,9 +47,9 @@ class HomePage extends StatelessWidget {
       ),
       body: ListView(
         children: const [
-          HomeCardPage(title: 'test',),
-          BudgetCard(),
-          BudgetWeek()
+          HomeCardPage(title: 'HomeCard'),
+          BudgetCardPage(title: 'BudgetCard'),
+          // BudgetWeek()
           // Add more widgets as needed
         ],
       ),
