@@ -47,7 +47,7 @@ class HomePage extends StatelessWidget {
       ),
       body: ListView(
         children: const [
-          HomeCard(),
+          HomeCardPage(title: 'test',),
           BudgetCard(),
           BudgetWeek()
           // Add more widgets as needed
