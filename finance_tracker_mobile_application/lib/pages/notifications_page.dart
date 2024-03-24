@@ -36,43 +36,43 @@ class NotificationsPage extends StatelessWidget {
 
           // Text Themes
 
-          child: ListView(
-        padding: const EdgeInsets.all(TSizes.sm),
-        children: [
-          Text('This is the Notifications Page',
-              style: theme.textTheme
-                  .labelLarge // Apply your custom text style from the theme
-              ),
+      //     child: ListView(
+      //   padding: const EdgeInsets.all(TSizes.sm),
+      //   children: [
+      //     Text('This is the Notifications Page',
+      //         style: theme.textTheme
+      //             .labelLarge // Apply your custom text style from the theme
+      //         ),
 
-          const Padding(padding: EdgeInsets.all(TSizes.md)),
+      //     const Padding(padding: EdgeInsets.all(TSizes.md)),
 
-          const CustomWhatsappButtonWidget(
-            onPressAction: 'Hello World',
-          ),
+      //     const CustomWhatsappButtonWidget(
+      //       onPressAction: 'Hello World',
+      //     ),
           
-          const Padding(padding: EdgeInsets.all(TSizes.md)),
+      //     const Padding(padding: EdgeInsets.all(TSizes.md)),
           
-          const BlackButtonWidget(
-            title: 'Cancel',
-            onPressAction: 'Cancelled',
-          ),
+      //     const BlackButtonWidget(
+      //       title: 'Cancel',
+      //       onPressAction: 'Cancelled',
+      //     ),
 
-          const Padding(padding: EdgeInsets.all(TSizes.md)),
+      //     const Padding(padding: EdgeInsets.all(TSizes.md)),
           
-          const OrangeButtonWidget(
-            title: 'Review',
-            onPressAction: 'Reviewed',
-            icon: 'Icon',
-          ),
+      //     const OrangeButtonWidget(
+      //       title: 'Review',
+      //       onPressAction: 'Reviewed',
+      //       icon: 'Icon',
+      //     ),
 
-          const Padding(padding: EdgeInsets.all(TSizes.md)),
+      //     const Padding(padding: EdgeInsets.all(TSizes.md)),
           
-          const LightBlueButtonWidget(
-            title: 'Details',
-            onPressAction: 'Detail viewed',
-          ),
-        ],
-      )
+      //     const LightBlueButtonWidget(
+      //       title: 'Details',
+      //       onPressAction: 'Detail viewed',
+      //     ),
+      //   ],
+      // )
 
           // Elevated Button Calling
 
@@ -83,6 +83,15 @@ class NotificationsPage extends StatelessWidget {
           //   icon: const Icon(Icons.notification_important), // Icon for the button
           //   label: const Text('Continue'),
           // ),
+
+           // Elevated Button Calling
+
+          child: OutlinedButton(
+            onPressed: () {
+              // Add your button press logic here
+            },
+            child: const Text('Cancel'),
+          ),
 
           // Accent Button
           // child: ButtonTheme(

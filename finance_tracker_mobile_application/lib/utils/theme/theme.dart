@@ -16,7 +16,8 @@ class TAppTheme {
       elevatedButtonTheme: TButtonTheme.elevatedButtonTheme,
       inputDecorationTheme: TTextFormFieldTheme.inputDecorationTheme,
       chipTheme: TChipTheme.chipTheme,
-      buttonTheme: TAccentButtonTheme.accentButtonTheme
+      buttonTheme: TAccentButtonTheme.accentButtonTheme,
+      outlinedButtonTheme: TButtonTheme.outlinedButtonTheme
   );
 }
 
