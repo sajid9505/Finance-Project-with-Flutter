@@ -16,13 +16,14 @@ To get started with this project, follow these steps:
 
    `git clone https://github.com/sajid9505/finance_project.git`
 
-2. Set up Flutter development environment by following the [official documentation](https://flutter.dev/docs/get-started/install).
+2. Checkout to the `develop` branch
+3. Set up Flutter development environment by following the [official documentation](https://flutter.dev/docs/get-started/install).
 
-3. Configure Google Sheets API and obtain necessary credentials. You can follow the instructions provided in the [Google Sheets API documentation](https://developers.google.com/sheets/api/quickstart/flutter).
+4. Configure Google Sheets API and obtain necessary credentials. You can follow the instructions provided in the [Google Sheets API documentation](https://developers.google.com/sheets/api/quickstart/flutter).
 
-4. Replace the placeholder credentials in the project with your own credentials.
+5. Replace the placeholder credentials in the project with your own credentials.
 
-5. Run the application:
+6. Run the application:
 
    `flutter run`
 
