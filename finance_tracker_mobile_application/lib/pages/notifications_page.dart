@@ -1,4 +1,3 @@
-import 'package:finance_tracker_mobile_application/components/budget_card.dart';
 import 'package:finance_tracker_mobile_application/components/cancel_button.dart';
 import 'package:finance_tracker_mobile_application/components/light_blue_button.dart';
 import 'package:finance_tracker_mobile_application/components/orange_button.dart';
