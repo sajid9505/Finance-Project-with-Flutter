@@ -20,10 +20,3 @@ class TAppTheme {
       outlinedButtonTheme: TButtonTheme.outlinedButtonTheme
   );
 }
-
-
-// Themes left to add:
-// Cards
-// Tabs
-// Modals
-// Buttons
