@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../providers/forecast_provider.dart';
 import '../../services/forecast_service.dart';
 
@@ -12,6 +13,7 @@ class ForecastScreen extends ConsumerWidget {
     final months = ref.watch(forecastProvider);
 
     return Scaffold(
+      backgroundColor: kBackground,
       appBar: AppBar(title: const Text('Spending Forecast')),
       body: months.every((m) => m.entries.isEmpty)
           ? const Center(

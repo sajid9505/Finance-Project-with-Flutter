@@ -1,14 +1,20 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/theme.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/dashboard/dashboard_screen.dart';
+import 'screens/shell/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+  ));
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -20,10 +26,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Expense Tracker',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: buildAppTheme(),
       home: const AuthGate(),
     );
   }
@@ -37,9 +40,15 @@ class AuthGate extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
 
     return authState.when(
-      data: (user) => user != null ? const DashboardScreen() : const LoginScreen(),
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (_, __) => const Scaffold(body: Center(child: Text('Something went wrong.'))),
+      data: (user) => user != null ? const MainShell() : const LoginScreen(),
+      loading: () => const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: kTeal),
+        ),
+      ),
+      error: (_, __) => const Scaffold(
+        body: Center(child: Text('Something went wrong.')),
+      ),
     );
   }
 }

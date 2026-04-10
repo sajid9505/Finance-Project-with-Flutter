@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/drain_provider.dart';
@@ -8,14 +9,30 @@ import '../../providers/forecast_provider.dart';
 import '../../providers/split_provider.dart';
 import '../../services/drain_service.dart';
 import '../../models/expense.dart';
-import '../auth/login_screen.dart';
 import '../expenses/add_expense_sheet.dart';
 import '../drains/silent_drains_screen.dart';
 import '../forecast/forecast_screen.dart';
 import '../splits/splits_screen.dart';
 
+final _splitsDismissedProvider = StateProvider<bool>((ref) => false);
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
+
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning,';
+    if (hour < 17) return 'Good afternoon,';
+    return 'Good evening,';
+  }
+
+  String _firstName(String? displayName, String? email) {
+    if (displayName != null && displayName.isNotEmpty) {
+      return displayName.split(' ').first;
+    }
+    if (email != null) return email.split('@').first;
+    return 'there';
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,273 +41,434 @@ class DashboardScreen extends ConsumerWidget {
     final forecast = ref.watch(forecastProvider);
     final totalOutstanding = ref.watch(totalOutstandingProvider);
     final splitsDismissed = ref.watch(_splitsDismissedProvider);
+    final user = ref.watch(authServiceProvider).currentUser;
+    final currency = NumberFormat.currency(symbol: '\$');
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Expense Tracker'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await ref.read(authServiceProvider).signOut();
-              if (context.mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (_) => false,
-                );
-              }
-            },
+      backgroundColor: kTeal,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kTeal,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        onPressed: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-        ],
+          builder: (_) => const AddExpenseSheet(),
+        ),
+        child: const Icon(Icons.add, size: 28),
       ),
       body: expensesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+            child: CircularProgressIndicator(color: Colors.white)),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (expenses) {
-          if (expenses.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('No expenses yet', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                  SizedBox(height: 8),
-                  Text('Tap + to add your first expense',
-                      style: TextStyle(color: Colors.grey, fontSize: 14)),
-                ],
-              ),
-            );
-          }
-
-          final totalThisMonth = expenses
-              .where((e) =>
-                  e.date.month == DateTime.now().month &&
-                  e.date.year == DateTime.now().year)
+          final now = DateTime.now();
+          final thisMonthExpenses = expenses.where(
+              (e) => e.date.month == now.month && e.date.year == now.year);
+          final totalThisMonth =
+              thisMonthExpenses.fold(0.0, (sum, e) => sum + e.amount);
+          final recurringTotal = thisMonthExpenses
+              .where((e) => e.isRecurring)
               .fold(0.0, (sum, e) => sum + e.amount);
-
+          final oneOffTotal = totalThisMonth - recurringTotal;
           final drains = drainsAsync.value ?? [];
 
           return Column(
             children: [
-              _SummaryCard(totalThisMonth: totalThisMonth),
-              if (drains.isNotEmpty)
-                _DrainBanner(
-                  count: drains.length,
-                  totalMonthly: DrainService.totalMonthlyCost(drains),
+              // ── Teal header ──────────────────────────────────────────
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Greeting row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _greeting(),
+                                style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w400),
+                              ),
+                              Text(
+                                _firstName(
+                                    user?.displayName, user?.email),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Stack(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                    Icons.notifications_outlined,
+                                    color: Colors.white,
+                                    size: 24),
+                              ),
+                              Positioned(
+                                top: 6,
+                                right: 6,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.orange,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ── Balance card (teal-on-teal) ──────────────────
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: Colors.white.withOpacity(0.12),
+                              width: 1),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('Total Spent',
+                                        style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500)),
+                                    const SizedBox(width: 4),
+                                    Icon(Icons.keyboard_arrow_up,
+                                        color: Colors.white70, size: 18),
+                                  ],
+                                ),
+                                const Icon(Icons.more_horiz,
+                                    color: Colors.white54, size: 20),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              currency.format(totalThisMonth),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.5),
+                            ),
+                            const SizedBox(height: 16),
+                            Divider(
+                                color: Colors.white.withOpacity(0.2),
+                                height: 1),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _StatItem(
+                                    icon: Icons.arrow_downward,
+                                    label: 'One-time',
+                                    amount: currency.format(oneOffTotal),
+                                  ),
+                                ),
+                                Container(
+                                    width: 1,
+                                    height: 32,
+                                    color:
+                                        Colors.white.withOpacity(0.2)),
+                                Expanded(
+                                  child: _StatItem(
+                                    icon: Icons.arrow_upward,
+                                    label: 'Recurring',
+                                    amount: currency.format(recurringTotal),
+                                    alignRight: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              if (forecast.any((m) => m.entries.isNotEmpty))
-                _ForecastCard(nextMonthTotal: forecast.first.total),
-              if (totalOutstanding > 0 && !splitsDismissed)
-                _SplitsCard(
-                  totalOutstanding: totalOutstanding,
-                  onDismiss: () =>
-                      ref.read(_splitsDismissedProvider.notifier).state = true,
-                ),
+              ),
+
+              // ── White bottom area ─────────────────────────────────────
               Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: expenses.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (_, i) => _ExpenseTile(expense: expenses[i]),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: kBackground,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(28)),
+                  ),
+                  child: expenses.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: kTeal.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                    Icons.receipt_long_outlined,
+                                    size: 48,
+                                    color: kTeal),
+                              ),
+                              const SizedBox(height: 16),
+                              const Text('No expenses yet',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87)),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Tap + to add your first expense',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade500),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView(
+                          padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                          children: [
+                            // Insight banners
+                            if (drains.isNotEmpty)
+                              _InsightBanner(
+                                icon: Icons.warning_amber_rounded,
+                                color: Colors.orange,
+                                text:
+                                    '${drains.length} silent drain${drains.length == 1 ? '' : 's'} · ${currency.format(DrainService.totalMonthlyCost(drains))}/mo',
+                                onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const SilentDrainsScreen())),
+                              ),
+                            if (forecast
+                                .any((m) => m.entries.isNotEmpty)) ...[
+                              if (drains.isNotEmpty)
+                                const SizedBox(height: 10),
+                              _InsightBanner(
+                                icon: Icons.insights_outlined,
+                                color: Colors.blue,
+                                text:
+                                    'Next month forecast · ${currency.format(forecast.first.total)}',
+                                onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const ForecastScreen())),
+                              ),
+                            ],
+                            if (totalOutstanding > 0 &&
+                                !splitsDismissed) ...[
+                              if (drains.isNotEmpty ||
+                                  forecast.any((m) => m.entries.isNotEmpty))
+                                const SizedBox(height: 10),
+                              _InsightBanner(
+                                icon: Icons.people_outline,
+                                color: Colors.purple,
+                                text:
+                                    '${currency.format(totalOutstanding)} outstanding from splits',
+                                onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const SplitsScreen())),
+                                onDismiss: () => ref
+                                    .read(_splitsDismissedProvider.notifier)
+                                    .state = true,
+                              ),
+                            ],
+
+                            // Expense list
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 20, bottom: 10),
+                              child: Text('Recent Expenses',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.grey.shade800)),
+                            ),
+                            ...expenses.map((e) => Padding(
+                                  padding:
+                                      const EdgeInsets.only(bottom: 10),
+                                  child: _ExpenseTile(expense: e),
+                                )),
+                          ],
+                        ),
                 ),
               ),
             ],
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          builder: (_) => const AddExpenseSheet(),
-        ),
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
 
-// In-memory dismiss state — resets when app restarts (intentional, per spec)
-final _splitsDismissedProvider = StateProvider<bool>((ref) => false);
+// ─── Stat item inside balance card ──────────────────────────────────────────
 
-class _SplitsCard extends StatelessWidget {
-  final double totalOutstanding;
-  final VoidCallback onDismiss;
+class _StatItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String amount;
+  final bool alignRight;
 
-  const _SplitsCard({required this.totalOutstanding, required this.onDismiss});
-
-  @override
-  Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const SplitsScreen()),
-      ),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.blue.shade50,
-          border: Border.all(color: Colors.blue.shade200),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.people_outline, color: Colors.blue.shade700, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                '${currency.format(totalOutstanding)} outstanding from splits',
-                style: TextStyle(
-                    color: Colors.blue.shade800, fontWeight: FontWeight.w600),
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.close, color: Colors.blue.shade400, size: 18),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              tooltip: 'Dismiss',
-              onPressed: onDismiss,
-            ),
-            const SizedBox(width: 4),
-            Icon(Icons.chevron_right, color: Colors.blue.shade700),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ForecastCard extends StatelessWidget {
-  final double nextMonthTotal;
-  const _ForecastCard({required this.nextMonthTotal});
+  const _StatItem({
+    required this.icon,
+    required this.label,
+    required this.amount,
+    this.alignRight = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ForecastScreen()),
-      ),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.5),
-          border: Border.all(
-              color: Theme.of(context).colorScheme.secondaryContainer),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.insights_outlined,
-                color: Theme.of(context).colorScheme.secondary, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Next month forecast · ${currency.format(nextMonthTotal)}',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSecondaryContainer,
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-            Icon(Icons.chevron_right,
-                color: Theme.of(context).colorScheme.secondary),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DrainBanner extends StatelessWidget {
-  final int count;
-  final double totalMonthly;
-  const _DrainBanner({required this.count, required this.totalMonthly});
-
-  @override
-  Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const SilentDrainsScreen()),
-      ),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.orange.shade50,
-          border: Border.all(color: Colors.orange.shade200),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                '$count silent drain${count == 1 ? '' : 's'} · ${currency.format(totalMonthly)}/mo',
-                style: TextStyle(
-                    color: Colors.orange.shade800, fontWeight: FontWeight.w600),
-              ),
-            ),
-            Icon(Icons.chevron_right, color: Colors.orange.shade700),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SummaryCard extends StatelessWidget {
-  final double totalThisMonth;
-  const _SummaryCard({required this.totalThisMonth});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Padding(
+      padding: EdgeInsets.only(
+          left: alignRight ? 16 : 0, right: alignRight ? 0 : 16),
+      child: Column(
+        crossAxisAlignment:
+            alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            mainAxisAlignment: alignRight
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
             children: [
-              Text('This Month',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      fontSize: 14)),
-              const SizedBox(height: 4),
-              Text(
-                NumberFormat.currency(symbol: '\$').format(totalThisMonth),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6),
                 ),
+                child: Icon(icon, color: Colors.white, size: 12),
               ),
+              const SizedBox(width: 6),
+              Text(label,
+                  style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500)),
             ],
           ),
-          Icon(Icons.account_balance_wallet_outlined,
-              size: 40, color: Theme.of(context).colorScheme.onPrimaryContainer),
+          const SizedBox(height: 4),
+          Text(amount,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 }
+
+// ─── Insight Banner ──────────────────────────────────────────────────────────
+
+class _InsightBanner extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String text;
+  final VoidCallback onTap;
+  final VoidCallback? onDismiss;
+
+  const _InsightBanner({
+    required this.icon,
+    required this.color,
+    required this.text,
+    required this.onTap,
+    this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(text,
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade800)),
+            ),
+            if (onDismiss != null)
+              GestureDetector(
+                onTap: onDismiss,
+                child: Icon(Icons.close,
+                    size: 16, color: Colors.grey.shade400),
+              )
+            else
+              Icon(Icons.chevron_right,
+                  size: 18, color: Colors.grey.shade400),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Expense Tile ─────────────────────────────────────────────────────────────
 
 class _ExpenseTile extends ConsumerWidget {
   final Expense expense;
@@ -298,6 +476,7 @@ class _ExpenseTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currency = NumberFormat.currency(symbol: '\$');
     return Dismissible(
       key: Key(expense.id),
       direction: DismissDirection.endToStart,
@@ -305,78 +484,139 @@ class _ExpenseTile extends ConsumerWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.red.shade400,
+          borderRadius: BorderRadius.circular(16),
         ),
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
-      confirmDismiss: (_) async {
-        return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Delete expense?'),
-            content: Text('Remove "${expense.description}"?'),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete')),
-            ],
-          ),
-        );
-      },
+      confirmDismiss: (_) async => await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
+          title: const Text('Delete expense?'),
+          content: Text('Remove "${expense.description}"?'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Delete',
+                    style: TextStyle(color: Colors.red))),
+          ],
+        ),
+      ),
       onDismissed: (_) async {
         final user = ref.read(authServiceProvider).currentUser;
         if (user != null) {
-          await ref.read(expenseServiceProvider).deleteExpense(user.uid, expense.id);
+          await ref
+              .read(expenseServiceProvider)
+              .deleteExpense(user.uid, expense.id);
         }
       },
-      child: Card(
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            builder: (_) => AddExpenseSheet(expense: expense),
+      child: GestureDetector(
+        onTap: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-              child: Icon(_categoryIcon(expense.category),
-                  color: Theme.of(context).colorScheme.onSecondaryContainer, size: 20),
-            ),
-            title: Text(expense.description,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Row(
-              children: [
-                Text(expense.category,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                if (expense.isRecurring) ...[
-                  const SizedBox(width: 6),
-                  const Icon(Icons.repeat, size: 12, color: Colors.grey),
-                  const SizedBox(width: 2),
-                  Text(expense.recurrenceInterval ?? '',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          builder: (_) => AddExpenseSheet(expense: expense),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color:
+                      _categoryColor(expense.category).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  _categoryIcon(expense.category),
+                  color: _categoryColor(expense.category),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(expense.description,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black87)),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Text(expense.category,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade500)),
+                        if (expense.isRecurring) ...[
+                          Text(' · ',
+                              style: TextStyle(
+                                  color: Colors.grey.shade400)),
+                          Icon(Icons.repeat,
+                              size: 11,
+                              color: Colors.grey.shade400),
+                          const SizedBox(width: 2),
+                          Text(expense.recurrenceInterval ?? '',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade400)),
+                        ],
+                        if (expense.isSplit) ...[
+                          Text(' · ',
+                              style: TextStyle(
+                                  color: Colors.grey.shade400)),
+                          Icon(Icons.people_outline,
+                              size: 11,
+                              color: Colors.grey.shade400),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '- ${currency.format(expense.amount)}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: Colors.black87),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    DateFormat('dd MMM').format(expense.date),
+                    style: TextStyle(
+                        fontSize: 12, color: Colors.grey.shade400),
+                  ),
                 ],
-              ],
-            ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  NumberFormat.currency(symbol: '\$').format(expense.amount),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                Text(
-                  DateFormat('dd MMM').format(expense.date),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -395,6 +635,21 @@ class _ExpenseTile extends ConsumerWidget {
       case 'Shopping': return Icons.shopping_bag_outlined;
       case 'Subscriptions': return Icons.subscriptions_outlined;
       default: return Icons.receipt_outlined;
+    }
+  }
+
+  Color _categoryColor(String category) {
+    switch (category) {
+      case 'Food & Dining': return Colors.orange;
+      case 'Grocery': return Colors.green;
+      case 'Transport': return Colors.blue;
+      case 'Housing': return Colors.brown;
+      case 'Utilities': return Colors.yellow.shade700;
+      case 'Entertainment': return Colors.purple;
+      case 'Health': return Colors.red;
+      case 'Shopping': return Colors.pink;
+      case 'Subscriptions': return kTeal;
+      default: return Colors.grey;
     }
   }
 }
