@@ -47,6 +47,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() { _isLoading = true; _errorMessage = null; });
+    try {
+      final result = await ref.read(authServiceProvider).signInWithGoogle();
+      if (result == null) return; // user cancelled
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          (_) => false,
+        );
+      }
+    } on Exception catch (e) {
+      setState(() { _errorMessage = 'Google sign-in failed: ${e.toString()}'; });
+    } finally {
+      if (mounted) setState(() { _isLoading = false; });
+    }
+  }
+
   String _friendlyError(String error) {
     if (error.contains('user-not-found')) return 'No account found for this email.';
     if (error.contains('wrong-password')) return 'Incorrect password.';
@@ -122,6 +141,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: const Text("Don't have an account? Register"),
                   ),
                   const Divider(height: 32),
+                  SizedBox(
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      icon: Image.network(
+                        'https://developers.google.com/identity/images/g-logo.png',
+                        height: 20,
+                        errorBuilder: (_, __, ___) =>
+                            const Icon(Icons.login, size: 20),
+                      ),
+                      label: const Text('Sign in with Google'),
+                      onPressed: _isLoading ? null : _signInWithGoogle,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   SizedBox(
                     height: 48,
                     child: OutlinedButton(
