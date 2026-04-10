@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme.dart';
+import '../../core/utils.dart';
 import '../../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -44,15 +45,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  String _friendlyError(String error) {
-    if (error.contains('email-already-in-use')) return 'An account already exists for this email.';
-    if (error.contains('invalid-email')) return 'Invalid email address.';
-    if (error.contains('weak-password')) return 'Password is too weak.';
-    if (error.contains('operation-not-allowed') || error.contains('CONFIGURATION_NOT_FOUND')) {
-      return 'Email/password sign-in is not enabled in Firebase.';
-    }
-    return 'Registration failed: $error';
-  }
+  String _friendlyError(String error) => friendlyAuthError(error);
 
   @override
   Widget build(BuildContext context) {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme.dart';
+import '../../core/utils.dart';
 import '../../providers/auth_provider.dart';
 import 'register_screen.dart';
-import '../dashboard/dashboard_screen.dart';
 import '../shell/main_shell.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -65,13 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  String _friendlyError(String error) {
-    if (error.contains('user-not-found')) return 'No account found for this email.';
-    if (error.contains('wrong-password')) return 'Incorrect password.';
-    if (error.contains('invalid-email')) return 'Invalid email address.';
-    if (error.contains('too-many-requests')) return 'Too many attempts. Try again later.';
-    return 'Login failed. Please try again.';
-  }
+  String _friendlyError(String error) => friendlyAuthError(error);
 
   @override
   Widget build(BuildContext context) {

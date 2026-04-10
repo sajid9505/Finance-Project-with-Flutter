@@ -9,7 +9,7 @@ class LoginSecurityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authServiceProvider).currentUser;
+    final user = ref.watch(authStateProvider).value;
     final isGoogleUser = user?.providerData
             .any((p) => p.providerId == 'google.com') ??
         false;

@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../core/utils.dart';
 import '../../models/expense.dart';
 
 class BalanceCard extends StatefulWidget {
@@ -122,7 +123,6 @@ class _FrontCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -165,7 +165,7 @@ class _FrontCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            currency.format(totalThisMonth),
+            currencyFormat.format(totalThisMonth),
             style: const TextStyle(
                 color: Colors.white,
                 fontSize: 34,
@@ -181,7 +181,7 @@ class _FrontCard extends StatelessWidget {
                 child: _StatItem(
                   icon: Icons.arrow_downward,
                   label: 'One-time',
-                  amount: currency.format(oneOffTotal),
+                  amount: currencyFormat.format(oneOffTotal),
                 ),
               ),
               Container(
@@ -192,7 +192,7 @@ class _FrontCard extends StatelessWidget {
                 child: _StatItem(
                   icon: Icons.arrow_upward,
                   label: 'Recurring',
-                  amount: currency.format(recurringTotal),
+                  amount: currencyFormat.format(recurringTotal),
                   alignRight: true,
                 ),
               ),

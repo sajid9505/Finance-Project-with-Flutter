@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../core/utils.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/drain_provider.dart';
@@ -91,7 +91,6 @@ class _DrainSummaryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
@@ -120,7 +119,7 @@ class _DrainSummaryHeader extends StatelessWidget {
               Expanded(
                 child: _StatBox(
                   label: 'Per Month',
-                  value: currency.format(totalMonthly),
+                  value: currencyFormat.format(totalMonthly),
                   color: Colors.orange.shade700,
                 ),
               ),
@@ -128,7 +127,7 @@ class _DrainSummaryHeader extends StatelessWidget {
               Expanded(
                 child: _StatBox(
                   label: 'Per Year',
-                  value: currency.format(totalYearly),
+                  value: currencyFormat.format(totalYearly),
                   color: Colors.red.shade700,
                 ),
               ),
@@ -175,7 +174,6 @@ class _DrainTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currency = NumberFormat.currency(symbol: '\$');
     final monthlyAmount = DrainService.toMonthlyAmount(expense);
 
     return Card(
@@ -205,7 +203,7 @@ class _DrainTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      currency.format(expense.amount),
+                      currencyFormat.format(expense.amount),
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),
@@ -220,7 +218,7 @@ class _DrainTile extends ConsumerWidget {
             if (expense.recurrenceInterval != 'monthly') ...[
               const SizedBox(height: 8),
               Text(
-                '≈ ${currency.format(monthlyAmount)} / month',
+                '≈ ${currencyFormat.format(monthlyAmount)} / month',
                 style: TextStyle(fontSize: 13, color: Colors.orange.shade700),
               ),
             ],
