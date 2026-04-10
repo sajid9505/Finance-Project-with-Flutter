@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
@@ -16,6 +17,7 @@ class SplitsScreen extends ConsumerWidget {
     final currency = NumberFormat.currency(symbol: '\$');
 
     return Scaffold(
+      backgroundColor: kBackground,
       appBar: AppBar(title: const Text('Bill Splits')),
       body: outstanding.isEmpty
           ? const Center(

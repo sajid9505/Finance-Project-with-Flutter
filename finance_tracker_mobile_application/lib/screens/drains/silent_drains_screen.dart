@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/drain_provider.dart';
@@ -15,6 +16,7 @@ class SilentDrainsScreen extends ConsumerWidget {
     final drainsAsync = ref.watch(silentDrainsProvider);
 
     return Scaffold(
+      backgroundColor: kBackground,
       appBar: AppBar(title: const Text('Silent Drains')),
       body: drainsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
