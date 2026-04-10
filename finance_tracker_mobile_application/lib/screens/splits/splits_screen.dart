@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../core/utils.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
@@ -14,7 +14,6 @@ class SplitsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final outstanding = ref.watch(outstandingSplitsProvider);
     final total = ref.watch(totalOutstandingProvider);
-    final currency = NumberFormat.currency(symbol: '\$');
 
     return Scaffold(
       backgroundColor: kBackground,
@@ -55,7 +54,7 @@ class SplitsScreen extends ConsumerWidget {
                                   color: Colors.blue.shade700, fontSize: 13)),
                           const SizedBox(height: 4),
                           Text(
-                            currency.format(total),
+                            currencyFormat.format(total),
                             style: TextStyle(
                               color: Colors.blue.shade900,
                               fontSize: 28,
@@ -91,7 +90,6 @@ class _SplitExpenseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currency = NumberFormat.currency(symbol: '\$');
     final expense = split.expense;
 
     return Card(
@@ -111,7 +109,7 @@ class _SplitExpenseCard extends ConsumerWidget {
                           fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
                 Text(
-                  currency.format(split.totalOwed),
+                  currencyFormat.format(split.totalOwed),
                   style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
@@ -121,7 +119,7 @@ class _SplitExpenseCard extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${expense.category} · Total: ${currency.format(expense.amount)}',
+              '${expense.category} · Total: ${currencyFormat.format(expense.amount)}',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const Divider(height: 20),
@@ -175,7 +173,6 @@ class _PersonRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -204,7 +201,7 @@ class _PersonRow extends StatelessWidget {
                 Text(person.name,
                     style: const TextStyle(fontWeight: FontWeight.w500)),
                 Text(
-                  person.settled ? 'Settled' : 'Owes ${currency.format(person.amount)}',
+                  person.settled ? 'Settled' : 'Owes ${currencyFormat.format(person.amount)}',
                   style: TextStyle(
                     fontSize: 12,
                     color: person.settled ? Colors.green : Colors.grey,

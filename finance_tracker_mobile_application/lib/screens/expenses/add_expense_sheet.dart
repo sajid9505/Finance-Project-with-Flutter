@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/utils.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
@@ -255,7 +256,6 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
     return Padding(
       padding: EdgeInsets.only(
         left: 24,
@@ -478,7 +478,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       const Text('Your share',
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       Text(
-                        currency.format(_yourShare),
+                        currencyFormat.format(_yourShare),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

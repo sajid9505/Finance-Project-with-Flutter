@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../core/utils.dart';
 import 'balance_card.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
@@ -42,8 +43,7 @@ class DashboardScreen extends ConsumerWidget {
     final forecast = ref.watch(forecastProvider);
     final totalOutstanding = ref.watch(totalOutstandingProvider);
     final splitsDismissed = ref.watch(_splitsDismissedProvider);
-    final user = ref.watch(authServiceProvider).currentUser;
-    final currency = NumberFormat.currency(symbol: '\$');
+    final user = ref.watch(authStateProvider).value;
 
     return Scaffold(
       backgroundColor: kTeal,
@@ -176,7 +176,7 @@ class DashboardScreen extends ConsumerWidget {
                                 icon: Icons.warning_amber_rounded,
                                 color: Colors.orange,
                                 text:
-                                    '${drains.length} silent drain${drains.length == 1 ? '' : 's'} · ${currency.format(DrainService.totalMonthlyCost(drains))}/mo',
+                                    '${drains.length} silent drain${drains.length == 1 ? '' : 's'} · ${currencyFormat.format(DrainService.totalMonthlyCost(drains))}/mo',
                                 onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -191,7 +191,7 @@ class DashboardScreen extends ConsumerWidget {
                                 icon: Icons.insights_outlined,
                                 color: Colors.blue,
                                 text:
-                                    'Next month forecast · ${currency.format(forecast.first.total)}',
+                                    'Next month forecast · ${currencyFormat.format(forecast.first.total)}',
                                 onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -208,7 +208,7 @@ class DashboardScreen extends ConsumerWidget {
                                 icon: Icons.people_outline,
                                 color: Colors.purple,
                                 text:
-                                    '${currency.format(totalOutstanding)} outstanding from splits',
+                                    '${currencyFormat.format(totalOutstanding)} outstanding from splits',
                                 onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -327,7 +327,6 @@ class _ExpenseTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currency = NumberFormat.currency(symbol: '\$');
     return Dismissible(
       key: Key(expense.id),
       direction: DismissDirection.endToStart,
@@ -453,7 +452,7 @@ class _ExpenseTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '- ${currency.format(expense.amount)}',
+                    '- ${currencyFormat.format(expense.amount)}',
                     style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,

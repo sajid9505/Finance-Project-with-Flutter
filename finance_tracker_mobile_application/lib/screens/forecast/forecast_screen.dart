@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import '../../core/utils.dart';
 import '../../providers/forecast_provider.dart';
 import '../../services/forecast_service.dart';
 
@@ -58,7 +59,6 @@ class _MonthCardState extends State<_MonthCard> {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
     final monthLabel = DateFormat('MMMM yyyy').format(widget.forecast.month);
     final total = widget.forecast.total;
     final maxAmount = widget.forecast.entries.isNotEmpty
@@ -96,7 +96,7 @@ class _MonthCardState extends State<_MonthCard> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        currency.format(total),
+                        currencyFormat.format(total),
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 20),
                       ),
@@ -143,7 +143,6 @@ class _ForecastEntryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.currency(symbol: '\$');
     final fraction = maxAmount > 0 ? (entry.amount / maxAmount) : 0.0;
 
     return Padding(
@@ -158,7 +157,7 @@ class _ForecastEntryRow extends StatelessWidget {
                 child: Text(entry.description,
                     style: const TextStyle(fontWeight: FontWeight.w500)),
               ),
-              Text(currency.format(entry.amount),
+              Text(currencyFormat.format(entry.amount),
                   style: const TextStyle(fontWeight: FontWeight.w600)),
             ],
           ),
