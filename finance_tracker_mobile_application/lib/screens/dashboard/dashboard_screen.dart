@@ -386,6 +386,7 @@ class _ExpenseTile extends ConsumerWidget {
   IconData _categoryIcon(String category) {
     switch (category) {
       case 'Food & Dining': return Icons.restaurant_outlined;
+      case 'Grocery': return Icons.local_grocery_store_outlined;
       case 'Transport': return Icons.directions_car_outlined;
       case 'Housing': return Icons.home_outlined;
       case 'Utilities': return Icons.bolt_outlined;

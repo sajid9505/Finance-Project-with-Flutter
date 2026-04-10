@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
+import '../../services/ocr_service.dart';
 
 class AddExpenseSheet extends ConsumerStatefulWidget {
   final Expense? expense;
@@ -25,6 +28,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   late bool _isSplit;
   late List<_SplitEntry> _splitEntries;
   bool _isLoading = false;
+  bool _isScanning = false;
 
   bool get _isEditing => widget.expense != null;
 
@@ -85,6 +89,85 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   double get _yourShare {
     final total = double.tryParse(_amountController.text) ?? 0.0;
     return (total - _totalSplitAmount).clamp(0.0, double.infinity);
+  }
+
+  Future<void> _scanReceipt(ImageSource source) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source, imageQuality: 85);
+    if (picked == null) return;
+
+    setState(() => _isScanning = true);
+    final ocr = OcrService();
+    try {
+      final data = await ocr.scanReceipt(File(picked.path));
+
+      if (data.amount != null) {
+        _amountController.text = data.amount!.toStringAsFixed(2);
+      }
+      if (data.description != null && _descriptionController.text.isEmpty) {
+        _descriptionController.text = data.description!;
+      }
+      if (data.date != null) {
+        setState(() => _selectedDate = data.date!);
+      }
+      if (data.category != null) {
+        setState(() => _selectedCategory = data.category!);
+      }
+
+      if (mounted) {
+        final filled = [
+          if (data.amount != null) 'amount',
+          if (data.description != null) 'description',
+          if (data.date != null) 'date',
+          if (data.category != null) 'category',
+        ];
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(filled.isEmpty
+                ? 'Could not extract data from receipt'
+                : 'Filled: ${filled.join(', ')}'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Scan failed: $e')),
+        );
+      }
+    } finally {
+      ocr.dispose();
+      if (mounted) setState(() => _isScanning = false);
+    }
+  }
+
+  void _showScanOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Take a photo'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _scanReceipt(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _scanReceipt(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _pickDate() async {
@@ -193,9 +276,25 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                   Text(_isEditing ? 'Edit Expense' : 'Add Expense',
                       style: const TextStyle(
                           fontSize: 20, fontWeight: FontWeight.bold)),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
+                  Row(
+                    children: [
+                      if (_isScanning)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else
+                        IconButton(
+                          icon: const Icon(Icons.document_scanner_outlined),
+                          tooltip: 'Scan receipt',
+                          onPressed: _showScanOptions,
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
                   ),
                 ],
               ),

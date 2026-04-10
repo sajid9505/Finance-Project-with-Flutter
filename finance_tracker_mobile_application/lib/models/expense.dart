@@ -96,6 +96,7 @@ class Expense {
 
 const List<String> kExpenseCategories = [
   'Food & Dining',
+  'Grocery',
   'Transport',
   'Housing',
   'Utilities',
