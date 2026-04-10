@@ -3,13 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
+import 'account_info_screen.dart';
+import 'login_security_screen.dart';
+import 'data_privacy_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authServiceProvider).currentUser;
+    final user = ref.watch(authStateProvider).value;
     final displayName = user?.displayName ?? user?.email?.split('@').first ?? 'User';
     final email = user?.email ?? '';
     final initials = displayName.isNotEmpty
@@ -77,17 +80,23 @@ class ProfileScreen extends ConsumerWidget {
                       _MenuItem(
                         icon: Icons.person_outline,
                         label: 'Account Info',
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) => const AccountInfoScreen())),
                       ),
                       _MenuItem(
                         icon: Icons.shield_outlined,
                         label: 'Login & Security',
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) => const LoginSecurityScreen())),
                       ),
                       _MenuItem(
                         icon: Icons.privacy_tip_outlined,
                         label: 'Data & Privacy',
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) => const DataPrivacyScreen())),
                       ),
                     ],
                   ),
