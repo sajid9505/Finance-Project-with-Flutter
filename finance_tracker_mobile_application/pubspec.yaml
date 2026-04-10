@@ -45,6 +45,9 @@ dependencies:
   flutter_riverpod: ^2.5.1
   riverpod_annotation: ^2.3.5
 
+  # Charts
+  fl_chart: ^0.68.0
+
   # OCR & image picking
   google_mlkit_text_recognition: ^0.13.0
   image_picker: ^1.0.7

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
+import 'balance_card.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/drain_provider.dart';
@@ -111,110 +112,15 @@ class DashboardScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          Stack(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                    Icons.notifications_outlined,
-                                    color: Colors.white,
-                                    size: 24),
-                              ),
-                              Positioned(
-                                top: 6,
-                                right: 6,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.orange,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                          const SizedBox.shrink(),
                         ],
                       ),
                       const SizedBox(height: 24),
-
-                      // ── Balance card (teal-on-teal) ──────────────────
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: Colors.white.withOpacity(0.12),
-                              width: 1),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Text('Total Spent',
-                                        style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500)),
-                                    const SizedBox(width: 4),
-                                    Icon(Icons.keyboard_arrow_up,
-                                        color: Colors.white70, size: 18),
-                                  ],
-                                ),
-                                const Icon(Icons.more_horiz,
-                                    color: Colors.white54, size: 20),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              currency.format(totalThisMonth),
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.5),
-                            ),
-                            const SizedBox(height: 16),
-                            Divider(
-                                color: Colors.white.withOpacity(0.2),
-                                height: 1),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _StatItem(
-                                    icon: Icons.arrow_downward,
-                                    label: 'One-time',
-                                    amount: currency.format(oneOffTotal),
-                                  ),
-                                ),
-                                Container(
-                                    width: 1,
-                                    height: 32,
-                                    color:
-                                        Colors.white.withOpacity(0.2)),
-                                Expanded(
-                                  child: _StatItem(
-                                    icon: Icons.arrow_upward,
-                                    label: 'Recurring',
-                                    amount: currency.format(recurringTotal),
-                                    alignRight: true,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                      BalanceCard(
+                        totalThisMonth: totalThisMonth,
+                        oneOffTotal: oneOffTotal,
+                        recurringTotal: recurringTotal,
+                        allExpenses: expenses,
                       ),
                     ],
                   ),
@@ -342,61 +248,6 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 // ─── Stat item inside balance card ──────────────────────────────────────────
-
-class _StatItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String amount;
-  final bool alignRight;
-
-  const _StatItem({
-    required this.icon,
-    required this.label,
-    required this.amount,
-    this.alignRight = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-          left: alignRight ? 16 : 0, right: alignRight ? 0 : 16),
-      child: Column(
-        crossAxisAlignment:
-            alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: alignRight
-                ? MainAxisAlignment.end
-                : MainAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(icon, color: Colors.white, size: 12),
-              ),
-              const SizedBox(width: 6),
-              Text(label,
-                  style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500)),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(amount,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-}
 
 // ─── Insight Banner ──────────────────────────────────────────────────────────
 
