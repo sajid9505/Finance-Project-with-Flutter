@@ -11,7 +11,9 @@ import '../../services/ocr_service.dart';
 
 class AddExpenseSheet extends ConsumerStatefulWidget {
   final Expense? expense;
-  const AddExpenseSheet({super.key, this.expense});
+  // Pre-filled data from OCR scan (new expense only, not editing)
+  final Expense? prefilled;
+  const AddExpenseSheet({super.key, this.expense, this.prefilled});
 
   @override
   ConsumerState<AddExpenseSheet> createState() => _AddExpenseSheetState();
@@ -36,24 +38,24 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   @override
   void initState() {
     super.initState();
-    final e = widget.expense;
-    _amountController =
-        TextEditingController(text: e != null ? e.amount.toStringAsFixed(2) : '');
+    // editing takes priority, then OCR prefill, then blank
+    final e = widget.expense ?? widget.prefilled;
+    _amountController = TextEditingController(
+        text: e != null && e.amount > 0 ? e.amount.toStringAsFixed(2) : '');
     _descriptionController = TextEditingController(text: e?.description ?? '');
     _selectedCategory = e?.category ?? kExpenseCategories.first;
     _selectedDate = e?.date ?? DateTime.now();
     _isRecurring = e?.isRecurring ?? false;
     _recurrenceInterval = e?.recurrenceInterval ?? 'monthly';
     _isSplit = e?.isSplit ?? false;
-    _splitEntries = e?.splits
-            .map((s) => _SplitEntry(
-                  nameController: TextEditingController(text: s.name),
-                  amountController:
-                      TextEditingController(text: s.amount.toStringAsFixed(2)),
-                  settled: s.settled,
-                ))
-            .toList() ??
-        [];
+    _splitEntries = (widget.expense?.splits ?? [])
+        .map((s) => _SplitEntry(
+              nameController: TextEditingController(text: s.name),
+              amountController:
+                  TextEditingController(text: s.amount.toStringAsFixed(2)),
+              settled: s.settled,
+            ))
+        .toList();
   }
 
   @override
