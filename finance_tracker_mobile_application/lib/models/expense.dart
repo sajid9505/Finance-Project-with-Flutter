@@ -106,3 +106,18 @@ const List<String> kExpenseCategories = [
   'Subscriptions',
   'Other',
 ];
+
+/// Default essential/non-essential classification per category.
+/// Users can override these in their settings.
+const Map<String, bool> kDefaultEssentialMap = {
+  'Food & Dining': false,
+  'Grocery': true,
+  'Transport': true,
+  'Housing': true,
+  'Utilities': true,
+  'Entertainment': false,
+  'Health': true,
+  'Shopping': false,
+  'Subscriptions': false,
+  'Other': false,
+};

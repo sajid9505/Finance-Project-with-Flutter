@@ -11,6 +11,7 @@ class BalanceCard extends StatefulWidget {
   final double oneOffTotal;
   final double recurringTotal;
   final List<Expense> allExpenses;
+  final bool isOverBudget;
 
   const BalanceCard({
     super.key,
@@ -18,6 +19,7 @@ class BalanceCard extends StatefulWidget {
     required this.oneOffTotal,
     required this.recurringTotal,
     required this.allExpenses,
+    this.isOverBudget = false,
   });
 
   @override
@@ -98,6 +100,7 @@ class _BalanceCardState extends State<BalanceCard>
                   totalThisMonth: widget.totalThisMonth,
                   oneOffTotal: widget.oneOffTotal,
                   recurringTotal: widget.recurringTotal,
+                  isOverBudget: widget.isOverBudget,
                   onFlip: _flip,
                 ),
         );
@@ -112,6 +115,7 @@ class _FrontCard extends StatelessWidget {
   final double totalThisMonth;
   final double oneOffTotal;
   final double recurringTotal;
+  final bool isOverBudget;
   final VoidCallback onFlip;
 
   const _FrontCard({
@@ -119,17 +123,24 @@ class _FrontCard extends StatelessWidget {
     required this.oneOffTotal,
     required this.recurringTotal,
     required this.onFlip,
+    this.isOverBudget = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: isOverBudget
+            ? Colors.red.withOpacity(0.25)
+            : Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+        border: Border.all(
+            color: isOverBudget
+                ? Colors.red.withOpacity(0.5)
+                : Colors.white.withOpacity(0.12),
+            width: isOverBudget ? 1.5 : 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,8 +156,12 @@ class _FrontCard extends StatelessWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w500)),
                   const SizedBox(width: 4),
-                  const Icon(Icons.keyboard_arrow_up,
-                      color: Colors.white70, size: 18),
+                  if (isOverBudget)
+                    const Icon(Icons.warning_amber_rounded,
+                        color: Colors.orangeAccent, size: 16)
+                  else
+                    const Icon(Icons.keyboard_arrow_up,
+                        color: Colors.white70, size: 18),
                 ],
               ),
               GestureDetector(
@@ -172,6 +187,14 @@ class _FrontCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 letterSpacing: -0.5),
           ),
+          if (isOverBudget) ...[
+            const SizedBox(height: 4),
+            const Text('Over budget',
+                style: TextStyle(
+                    color: Colors.orangeAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600)),
+          ],
           const SizedBox(height: 16),
           Divider(color: Colors.white.withOpacity(0.2), height: 1),
           const SizedBox(height: 16),

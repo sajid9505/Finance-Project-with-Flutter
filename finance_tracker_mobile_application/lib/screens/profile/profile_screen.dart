@@ -4,6 +4,7 @@ import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 import 'account_info_screen.dart';
+import 'budget_settings_screen.dart';
 import 'login_security_screen.dart';
 import 'data_privacy_screen.dart';
 
@@ -83,6 +84,14 @@ class ProfileScreen extends ConsumerWidget {
                         onTap: () => Navigator.push(context,
                             MaterialPageRoute(
                                 builder: (_) => const AccountInfoScreen())),
+                      ),
+                      _MenuItem(
+                        icon: Icons.account_balance_wallet_outlined,
+                        label: 'Budget Settings',
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const BudgetSettingsScreen())),
                       ),
                       _MenuItem(
                         icon: Icons.shield_outlined,

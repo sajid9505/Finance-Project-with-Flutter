@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
-        android:label="finance_tracker_mobile_application"
+        android:label="WhereItWent"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
