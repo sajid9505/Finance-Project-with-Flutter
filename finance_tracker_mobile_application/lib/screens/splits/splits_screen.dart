@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme.dart';
-import '../../core/utils.dart';
+import '../../providers/currency_provider.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
@@ -14,6 +15,7 @@ class SplitsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final outstanding = ref.watch(outstandingSplitsProvider);
     final total = ref.watch(totalOutstandingProvider);
+    final fmt = ref.watch(currencyFormatProvider);
 
     return Scaffold(
       backgroundColor: kBackground,
@@ -54,7 +56,7 @@ class SplitsScreen extends ConsumerWidget {
                                   color: Colors.blue.shade700, fontSize: 13)),
                           const SizedBox(height: 4),
                           Text(
-                            currencyFormat.format(total),
+                            fmt.format(total),
                             style: TextStyle(
                               color: Colors.blue.shade900,
                               fontSize: 28,
@@ -91,6 +93,7 @@ class _SplitExpenseCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expense = split.expense;
+    final fmt = ref.watch(currencyFormatProvider);
 
     return Card(
       margin: EdgeInsets.zero,
@@ -109,7 +112,7 @@ class _SplitExpenseCard extends ConsumerWidget {
                           fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
                 Text(
-                  currencyFormat.format(split.totalOwed),
+                  fmt.format(split.totalOwed),
                   style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
@@ -119,7 +122,7 @@ class _SplitExpenseCard extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${expense.category} · Total: ${currencyFormat.format(expense.amount)}',
+              '${expense.category} · Total: ${fmt.format(expense.amount)}',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const Divider(height: 20),
@@ -127,6 +130,7 @@ class _SplitExpenseCard extends ConsumerWidget {
                   person: person,
                   expense: expense,
                   ref: ref,
+                  fmt: fmt,
                 )),
           ],
         ),
@@ -139,11 +143,13 @@ class _PersonRow extends StatelessWidget {
   final SplitPerson person;
   final Expense expense;
   final WidgetRef ref;
+  final NumberFormat fmt;
 
   const _PersonRow({
     required this.person,
     required this.expense,
     required this.ref,
+    required this.fmt,
   });
 
   Future<void> _toggleSettled(BuildContext context) async {
@@ -201,7 +207,7 @@ class _PersonRow extends StatelessWidget {
                 Text(person.name,
                     style: const TextStyle(fontWeight: FontWeight.w500)),
                 Text(
-                  person.settled ? 'Settled' : 'Owes ${currencyFormat.format(person.amount)}',
+                  person.settled ? 'Settled' : 'Owes ${fmt.format(person.amount)}',
                   style: TextStyle(
                     fontSize: 12,
                     color: person.settled ? Colors.green : Colors.grey,

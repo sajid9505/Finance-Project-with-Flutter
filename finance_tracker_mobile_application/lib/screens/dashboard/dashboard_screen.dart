@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
-import '../../core/utils.dart';
 import 'balance_card.dart';
 import '../../models/budget.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/budget_provider.dart';
 import '../../providers/category_provider.dart';
+import '../../providers/currency_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/drain_provider.dart';
 import '../../providers/forecast_provider.dart';
@@ -54,6 +54,7 @@ class DashboardScreen extends ConsumerWidget {
     final user = ref.watch(authStateProvider).value;
     final budget = ref.watch(budgetProvider).value;
     final categoryTypes = ref.watch(categoryTypesProvider).value ?? kDefaultEssentialMap;
+    final fmt = ref.watch(currencyFormatProvider);
 
     return Scaffold(
       backgroundColor: kTeal,
@@ -159,6 +160,7 @@ class DashboardScreen extends ConsumerWidget {
                           budget: budget,
                           expenses: expenses,
                           categoryTypes: categoryTypes,
+                          fmt: fmt,
                         ),
                         const SizedBox(height: 12),
                       ],
@@ -169,7 +171,7 @@ class DashboardScreen extends ConsumerWidget {
                           icon: Icons.warning_amber_rounded,
                           color: Colors.orange,
                           text:
-                              '${drains.length} silent drain${drains.length == 1 ? '' : 's'} · ${currencyFormat.format(DrainService.totalMonthlyCost(drains))}/mo',
+                              '${drains.length} silent drain${drains.length == 1 ? '' : 's'} · ${fmt.format(DrainService.totalMonthlyCost(drains))}/mo',
                           onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -182,7 +184,7 @@ class DashboardScreen extends ConsumerWidget {
                           icon: Icons.insights_outlined,
                           color: Colors.blue,
                           text:
-                              'Next month forecast · ${currencyFormat.format(forecast.first.total)}',
+                              'Next month forecast · ${fmt.format(forecast.first.total)}',
                           onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -197,7 +199,7 @@ class DashboardScreen extends ConsumerWidget {
                           icon: Icons.people_outline,
                           color: Colors.purple,
                           text:
-                              '${currencyFormat.format(totalOutstanding)} outstanding from splits',
+                              '${fmt.format(totalOutstanding)} outstanding from splits',
                           onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -265,7 +267,7 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                         ...expenses.map((e) => Padding(
                               padding: const EdgeInsets.only(bottom: 10),
-                              child: _ExpenseTile(expense: e),
+                              child: _ExpenseTile(expense: e, fmt: fmt),
                             )),
                       ],
                     ],
@@ -463,11 +465,13 @@ class _DailyReflectionCard extends StatelessWidget {
   final Budget budget;
   final List<Expense> expenses;
   final Map<String, bool> categoryTypes;
+  final NumberFormat fmt;
 
   const _DailyReflectionCard({
     required this.budget,
     required this.expenses,
     required this.categoryTypes,
+    required this.fmt,
   });
 
   @override
@@ -600,7 +604,7 @@ class _DailyReflectionCard extends StatelessWidget {
                                   : Colors.grey.shade600),
                           children: [
                             TextSpan(
-                              text: currencyFormat.format(todaySpent),
+                              text: fmt.format(todaySpent),
                               style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: isOver
@@ -609,7 +613,7 @@ class _DailyReflectionCard extends StatelessWidget {
                             ),
                             TextSpan(
                               text:
-                                  ' / ${currencyFormat.format(dailyAllowance)}/day',
+                                  ' / ${fmt.format(dailyAllowance)}/day',
                             ),
                           ],
                         ),
@@ -633,7 +637,7 @@ class _DailyReflectionCard extends StatelessWidget {
                   if (isOver) ...[
                     const SizedBox(height: 3),
                     Text(
-                      '${currencyFormat.format(todaySpent - dailyAllowance)} over today\'s allowance',
+                      '${fmt.format(todaySpent - dailyAllowance)} over today\'s allowance',
                       style: TextStyle(
                           fontSize: 11, color: Colors.red.shade400),
                     ),
@@ -769,7 +773,8 @@ class _InsightBanner extends StatelessWidget {
 
 class _ExpenseTile extends ConsumerWidget {
   final Expense expense;
-  const _ExpenseTile({required this.expense});
+  final NumberFormat fmt;
+  const _ExpenseTile({required this.expense, required this.fmt});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -896,7 +901,7 @@ class _ExpenseTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '- ${currencyFormat.format(expense.amount)}',
+                    '- ${fmt.format(expense.amount)}',
                     style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
