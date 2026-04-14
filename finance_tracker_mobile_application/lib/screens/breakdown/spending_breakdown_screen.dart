@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme.dart';
-import '../../core/utils.dart';
+import '../../providers/currency_provider.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/category_provider.dart';
@@ -14,6 +15,7 @@ class SpendingBreakdownScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesAsync = ref.watch(expensesProvider);
     final categoryTypes = ref.watch(categoryTypesProvider).value ?? kDefaultEssentialMap;
+    final fmt = ref.watch(currencyFormatProvider);
 
     return Scaffold(
       backgroundColor: kBackground,
@@ -53,6 +55,7 @@ class SpendingBreakdownScreen extends ConsumerWidget {
                 essentialTotal: essentialTotal,
                 nonEssentialTotal: nonEssentialTotal,
                 essentialFraction: essentialFraction,
+                fmt: fmt,
               ),
               const SizedBox(height: 20),
 
@@ -60,7 +63,8 @@ class SpendingBreakdownScreen extends ConsumerWidget {
               _SectionHeader(
                   label: 'Essentials',
                   total: essentialTotal,
-                  color: kTeal),
+                  color: kTeal,
+                  fmt: fmt),
               const SizedBox(height: 8),
               ...kExpenseCategories
                   .where((c) => categoryTypes[c] == true)
@@ -70,6 +74,7 @@ class SpendingBreakdownScreen extends ConsumerWidget {
                         isEssential: true,
                         grandTotal: grandTotal,
                         onToggle: () => _toggle(context, ref, c, false),
+                        fmt: fmt,
                       )),
 
               const SizedBox(height: 20),
@@ -78,7 +83,8 @@ class SpendingBreakdownScreen extends ConsumerWidget {
               _SectionHeader(
                   label: 'Non-Essentials',
                   total: nonEssentialTotal,
-                  color: Colors.orange),
+                  color: Colors.orange,
+                  fmt: fmt),
               const SizedBox(height: 8),
               ...kExpenseCategories
                   .where((c) => categoryTypes[c] == false)
@@ -88,6 +94,7 @@ class SpendingBreakdownScreen extends ConsumerWidget {
                         isEssential: false,
                         grandTotal: grandTotal,
                         onToggle: () => _toggle(context, ref, c, true),
+                        fmt: fmt,
                       )),
 
               const SizedBox(height: 16),
@@ -117,11 +124,13 @@ class _SplitSummaryCard extends StatelessWidget {
   final double essentialTotal;
   final double nonEssentialTotal;
   final double essentialFraction;
+  final NumberFormat fmt;
 
   const _SplitSummaryCard({
     required this.essentialTotal,
     required this.nonEssentialTotal,
     required this.essentialFraction,
+    required this.fmt,
   });
 
   @override
@@ -174,6 +183,7 @@ class _SplitSummaryCard extends StatelessWidget {
                   label: 'Essentials',
                   amount: essentialTotal,
                   percent: essentialFraction,
+                  fmt: fmt,
                 ),
               ),
               Expanded(
@@ -183,6 +193,7 @@ class _SplitSummaryCard extends StatelessWidget {
                   amount: nonEssentialTotal,
                   percent: 1 - essentialFraction,
                   alignRight: true,
+                  fmt: fmt,
                 ),
               ),
             ],
@@ -199,12 +210,14 @@ class _SummaryItem extends StatelessWidget {
   final double amount;
   final double percent;
   final bool alignRight;
+  final NumberFormat fmt;
 
   const _SummaryItem({
     required this.color,
     required this.label,
     required this.amount,
     required this.percent,
+    required this.fmt,
     this.alignRight = false,
   });
 
@@ -227,7 +240,7 @@ class _SummaryItem extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(currencyFormat.format(amount),
+        Text(fmt.format(amount),
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -244,9 +257,10 @@ class _SectionHeader extends StatelessWidget {
   final String label;
   final double total;
   final Color color;
+  final NumberFormat fmt;
 
   const _SectionHeader(
-      {required this.label, required this.total, required this.color});
+      {required this.label, required this.total, required this.color, required this.fmt});
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +283,7 @@ class _SectionHeader extends StatelessWidget {
                     color: Colors.grey.shade800)),
           ],
         ),
-        Text(currencyFormat.format(total),
+        Text(fmt.format(total),
             style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
@@ -285,6 +299,7 @@ class _CategoryRow extends StatelessWidget {
   final bool isEssential;
   final double grandTotal;
   final VoidCallback onToggle;
+  final NumberFormat fmt;
 
   const _CategoryRow({
     required this.category,
@@ -292,6 +307,7 @@ class _CategoryRow extends StatelessWidget {
     required this.isEssential,
     required this.grandTotal,
     required this.onToggle,
+    required this.fmt,
   });
 
   @override
@@ -325,7 +341,7 @@ class _CategoryRow extends StatelessWidget {
                           fontWeight: FontWeight.w500, fontSize: 14)),
                 ),
                 Text(
-                  amount > 0 ? currencyFormat.format(amount) : '—',
+                  amount > 0 ? fmt.format(amount) : '—',
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,

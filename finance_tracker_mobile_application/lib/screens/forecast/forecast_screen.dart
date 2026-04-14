@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme.dart';
-import '../../core/utils.dart';
+import '../../providers/currency_provider.dart';
 import '../../providers/forecast_provider.dart';
 import '../../services/forecast_service.dart';
 
@@ -12,6 +12,7 @@ class ForecastScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final months = ref.watch(forecastProvider);
+    final fmt = ref.watch(currencyFormatProvider);
 
     return Scaffold(
       backgroundColor: kBackground,
@@ -39,7 +40,7 @@ class ForecastScreen extends ConsumerWidget {
                   style: TextStyle(color: Colors.grey, fontSize: 13),
                 ),
                 const SizedBox(height: 16),
-                ...months.map((m) => _MonthCard(forecast: m)),
+                ...months.map((m) => _MonthCard(forecast: m, fmt: fmt)),
               ],
             ),
     );
@@ -48,7 +49,8 @@ class ForecastScreen extends ConsumerWidget {
 
 class _MonthCard extends StatefulWidget {
   final MonthForecast forecast;
-  const _MonthCard({required this.forecast});
+  final NumberFormat fmt;
+  const _MonthCard({required this.forecast, required this.fmt});
 
   @override
   State<_MonthCard> createState() => _MonthCardState();
@@ -96,7 +98,7 @@ class _MonthCardState extends State<_MonthCard> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        currencyFormat.format(total),
+                        widget.fmt.format(total),
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 20),
                       ),
@@ -124,6 +126,7 @@ class _MonthCardState extends State<_MonthCard> {
                     .map((e) => _ForecastEntryRow(
                           entry: e,
                           maxAmount: maxAmount,
+                          fmt: widget.fmt,
                         ))
                     .toList(),
               ),
@@ -138,8 +141,9 @@ class _MonthCardState extends State<_MonthCard> {
 class _ForecastEntryRow extends StatelessWidget {
   final ForecastEntry entry;
   final double maxAmount;
+  final NumberFormat fmt;
 
-  const _ForecastEntryRow({required this.entry, required this.maxAmount});
+  const _ForecastEntryRow({required this.entry, required this.maxAmount, required this.fmt});
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +161,7 @@ class _ForecastEntryRow extends StatelessWidget {
                 child: Text(entry.description,
                     style: const TextStyle(fontWeight: FontWeight.w500)),
               ),
-              Text(currencyFormat.format(entry.amount),
+              Text(fmt.format(entry.amount),
                   style: const TextStyle(fontWeight: FontWeight.w600)),
             ],
           ),

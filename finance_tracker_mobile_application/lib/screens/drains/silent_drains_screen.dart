@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme.dart';
-import '../../core/utils.dart';
+import '../../providers/currency_provider.dart';
 import '../../models/expense.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/drain_provider.dart';
@@ -14,6 +15,7 @@ class SilentDrainsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final drainsAsync = ref.watch(silentDrainsProvider);
+    final fmt = ref.watch(currencyFormatProvider);
 
     return Scaffold(
       backgroundColor: kBackground,
@@ -48,6 +50,7 @@ class SilentDrainsScreen extends ConsumerWidget {
                 count: drains.length,
                 totalMonthly: totalMonthly,
                 totalYearly: totalYearly,
+                fmt: fmt,
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -82,11 +85,13 @@ class _DrainSummaryHeader extends StatelessWidget {
   final int count;
   final double totalMonthly;
   final double totalYearly;
+  final NumberFormat fmt;
 
   const _DrainSummaryHeader({
     required this.count,
     required this.totalMonthly,
     required this.totalYearly,
+    required this.fmt,
   });
 
   @override
@@ -119,7 +124,7 @@ class _DrainSummaryHeader extends StatelessWidget {
               Expanded(
                 child: _StatBox(
                   label: 'Per Month',
-                  value: currencyFormat.format(totalMonthly),
+                  value: fmt.format(totalMonthly),
                   color: Colors.orange.shade700,
                 ),
               ),
@@ -127,7 +132,7 @@ class _DrainSummaryHeader extends StatelessWidget {
               Expanded(
                 child: _StatBox(
                   label: 'Per Year',
-                  value: currencyFormat.format(totalYearly),
+                  value: fmt.format(totalYearly),
                   color: Colors.red.shade700,
                 ),
               ),
@@ -174,6 +179,7 @@ class _DrainTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final fmt = ref.watch(currencyFormatProvider);
     final monthlyAmount = DrainService.toMonthlyAmount(expense);
 
     return Card(
@@ -203,7 +209,7 @@ class _DrainTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      currencyFormat.format(expense.amount),
+                      fmt.format(expense.amount),
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),
@@ -218,7 +224,7 @@ class _DrainTile extends ConsumerWidget {
             if (expense.recurrenceInterval != 'monthly') ...[
               const SizedBox(height: 8),
               Text(
-                '≈ ${currencyFormat.format(monthlyAmount)} / month',
+                '≈ ${fmt.format(monthlyAmount)} / month',
                 style: TextStyle(fontSize: 13, color: Colors.orange.shade700),
               ),
             ],

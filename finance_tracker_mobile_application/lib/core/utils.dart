@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+/// Fallback formatter used during loading or in non-widget contexts.
+/// Screens with a WidgetRef should use currencyFormatProvider instead.
 final currencyFormat = NumberFormat.currency(symbol: '\$');
 
 String friendlyAuthError(String error) {
