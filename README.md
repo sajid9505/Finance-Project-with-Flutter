@@ -1,4 +1,4 @@
-# WhereItWent — Personal Finance Tracker
+# WhereItWent; Personal Finance Tracker
 
 A clean, offline-first Android app for tracking your spending, catching silent subscriptions, and staying ahead of your finances. Built with Flutter and Firebase.
 
@@ -8,7 +8,7 @@ A clean, offline-first Android app for tracking your spending, catching silent s
 
 ### Dashboard
 - Live balance card showing income, expenses, and net balance for the current period
-- Daily spending card for non-essential categories — shows your daily allowance and flags overspending
+- Daily spending card for non-essential categories, shows your daily allowance and flags overspending
 - Quick-action buttons: add expense, scan a receipt, view spending breakdown, view silent drains
 - Insight banners that surface patterns (e.g. top spending day, largest category)
 
@@ -21,7 +21,7 @@ A clean, offline-first Android app for tracking your spending, catching silent s
 ### Spending Breakdown
 - Monthly split between **essentials** and **non-essentials**
 - Visual progress bar per category relative to total spend
-- Tap any category to move it between sections — your preference is saved to your account
+- Tap any category to move it between sections, your preference is saved to your account
 
 ### Spending Forecast
 - Projects the next 3 months of recurring charges
@@ -34,7 +34,7 @@ A clean, offline-first Android app for tracking your spending, catching silent s
 
 ### Bill Splits
 - Dedicated tab showing all outstanding splits across all expenses
-- One-tap "Mark Settled" per person — state syncs to Firestore in real time
+- One-tap "Mark Settled" per person, state syncs to Firestore in real time
 
 ### Budget Settings
 - Set budgets by category (not a single overall total)
@@ -43,7 +43,7 @@ A clean, offline-first Android app for tracking your spending, catching silent s
 
 ### Profile & Settings
 - Account info and display name
-- **Currency picker** — supports USD, BDT, AUD, GBP, EUR, CAD, SGD, INR
+- **Currency picker**: supports USD, BDT, AUD, GBP, EUR, CAD, SGD, INR
 - Login & security (password change)
 - Data & privacy controls
 - Google Sign-In support
