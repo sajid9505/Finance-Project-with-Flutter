@@ -36,7 +36,7 @@ A clean, offline-first Android app for tracking your spending, catching silent s
 - **Bill splitting** — attach named participants and track who still owes
 - **OCR receipt scanning** — point your camera at a receipt to pre-fill amount and description automatically
 
-### Bank SMS Auto-Detection *(New)*
+### Bank SMS Auto-Detection 
 - Background SMS listener detects Bangladeshi bank transaction alerts automatically
 - Parses amount, merchant, date, and card number from real bank SMS formats (UCB, Prime Bank, EBL, Jamuna Bank, Dutch-Bangla, bKash, City Bank, BRAC, Islami Bank, MTB, SCB, HSBC)
 - Auto-logs detected expenses to Firestore with smart category mapping
