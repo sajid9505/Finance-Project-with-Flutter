@@ -10,6 +10,9 @@ import 'providers/onboarding_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/shell/main_shell.dart';
+import 'services/bank_sms_service.dart';
+import 'services/bank_sender_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +21,8 @@ void main() async {
     persistenceEnabled: true,
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
+  await NotificationService.initialize();
+  BankSmsService.initialize();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
@@ -49,6 +54,9 @@ class AuthGate extends ConsumerWidget {
     return authState.when(
       data: (user) {
         if (user == null) return const LoginScreen();
+        // Process any SMS queued while app was closed
+        BankSmsService.processPendingQueue(user.uid);
+        BankSenderService().syncOnLogin(user.uid);
         final onboardingDone = ref.watch(onboardingCompleteProvider);
         return onboardingDone.when(
           data: (done) => done ? const MainShell() : const OnboardingScreen(),

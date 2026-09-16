@@ -7,6 +7,7 @@ import 'account_info_screen.dart';
 import 'budget_settings_screen.dart';
 import 'currency_settings_screen.dart';
 import 'login_security_screen.dart';
+import 'sms_monitoring_screen.dart';
 import 'data_privacy_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -101,6 +102,14 @@ class ProfileScreen extends ConsumerWidget {
                             MaterialPageRoute(
                                 builder: (_) =>
                                     const CurrencySettingsScreen())),
+                      ),
+                      _MenuItem(
+                        icon: Icons.sms_outlined,
+                        label: 'SMS Monitoring',
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const SmsMonitoringScreen())),
                       ),
                       _MenuItem(
                         icon: Icons.shield_outlined,
